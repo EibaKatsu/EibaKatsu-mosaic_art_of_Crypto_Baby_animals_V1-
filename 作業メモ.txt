@@ -1,0 +1,11 @@
+# githubプロジェクト
+https://github.com/EibaKatsu/mosaic_art_of_Crypto_Baby_animals_V1
+
+# git 初期化
+git init
+
+# githubリポジトリに紐づけ
+git remote add origin https://github.com/EibaKatsu/mosaic_art_of_Crypto_Baby_animals_V1.git
+
+# リポジトリ確認
+git remote -v
