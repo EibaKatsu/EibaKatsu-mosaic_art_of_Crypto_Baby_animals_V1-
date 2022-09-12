@@ -9,3 +9,37 @@ git remote add origin https://github.com/EibaKatsu/mosaic_art_of_Crypto_Baby_ani
 
 # リポジトリ確認
 git remote -v
+
+# ブランチの作成
+git branch -M main
+
+# ブランチにpush
+git push -uf origin main
+
+# npm 初期化
+npm init --yes
+
+# harthatインストール
+npm install --save-dev hardhat
+
+# hardhat設定ファイル作成
+npx hardhat
+　→「Create an empty hardhat.config.js」を選択。残りは全て y
+
+# プラグイン追加
+npm install --save-dev @nomiclabs/hardhat-ethers ethers @nomiclabs/hardhat-waffle ethereum-waffle chai
+
+# openzeppelinをインストール
+npm install @openzeppelin/contracts
+
+# コンパイル
+npx hardhat compile
+
+## テスト準備
+# 必要なパッケージのインストール
+npm install --save mocha ganache-cli web3
+
+# testフォルダ配下にテストコードを記載
+
+# テスト実行
+npx hardhat test

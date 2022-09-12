@@ -1,7 +1,6 @@
 {
   "name": "mcba_contract",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -13,6 +12,22 @@
     "@openzeppelin/contracts": "^4.7.3"
   },
   "devDependencies": {
-    "erc721a": "^4.2.2"
-  }
+    "@nomiclabs/hardhat-ethers": "^2.1.1",
+    "@nomiclabs/hardhat-waffle": "^2.0.3",
+    "cha": "^0.2.1",
+    "chai": "^4.3.6",
+    "erc721a": "^4.2.2",
+    "ethereum-waffle": "^3.4.4",
+    "ethers": "^5.7.0",
+    "hardhat": "^2.11.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EibaKatsu/mosaic_art_of_Crypto_Baby_animals_V1.git"
+  },
+  "bugs": {
+    "url": "https://github.com/EibaKatsu/mosaic_art_of_Crypto_Baby_animals_V1/issues"
+  },
+  "homepage": "https://github.com/EibaKatsu/mosaic_art_of_Crypto_Baby_animals_V1#readme",
+  "description": ""
 }
