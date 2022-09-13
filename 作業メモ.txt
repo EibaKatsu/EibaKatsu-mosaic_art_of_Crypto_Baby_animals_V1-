@@ -38,8 +38,12 @@ npx hardhat compile
 ## テスト準備
 # 必要なパッケージのインストール
 npm install --save mocha ganache-cli web3
+npm install --save-dev @nomicfoundation/hardhat-network-helpers
 
 # testフォルダ配下にテストコードを記載
+
+# harhat.config.jsに以下を追加
+    require("@nomiclabs/hardhat-waffle");
 
 # テスト実行
 npx hardhat test
