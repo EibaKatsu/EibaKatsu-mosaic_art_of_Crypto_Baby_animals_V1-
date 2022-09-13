@@ -14,11 +14,8 @@ contract CBAM is ERC721URIStorage, Ownable {
 
     string baseURI;
     string public baseExtension = ".json";
-    uint256 public maxAmount = 10;
+    uint256 public maxAmount = 3;
     bool public paused = false;
-
-    // Contract of Crypto Baby Animals
-    ERC721 cbaContract = ERC721(0x495f947276749Ce646f68AC8c248420045cb7b5e);
 
     /**
      * リエントランシ対策
@@ -48,29 +45,23 @@ contract CBAM is ERC721URIStorage, Ownable {
         // コントラクトが停止中でないこと
         require(!paused, "the contract is paused");
 
-        // 数量が1以上10以下であること
+        // 数量が1以上maxAmount以下であること
         require(amount > 0 && amount <= maxAmount, "amount is incorrect");
 
         // 指定されたtokenIdをミントしていないこと
         require(!_exists(_tokenId * 10), "the tokenId is exists");
 
-        // CBAコントラクトからオーナーアドレスを取得
-        address cbaOwner = cbaContract.ownerOf(_tokenId);
-
-        // senderとCBAオーナーが一致すること
-        require(msg.sender == cbaOwner, "sender isn't match to CBA owner");
-
         // 指定された数量分ループ
         for (uint256 i = 0; i <= amount; i++) {
 
             // CBAの tokenId * 10を起点に数量分+1した値をtokenIdにする
-            _mint(msg.sender, _tokenId * 10 + i);
+            uint256 newTokenId = _tokenId * 10 + i;
+            
+            // mint
+            _mint(msg.sender, newTokenId);
 
-            // イメージファイルは共通
-            _setTokenURI(
-                _tokenId * 10 + i,
-                string(abi.encodePacked(_baseURI(),_tokenId * 10,baseExtension))
-            );
+            // tokenURI
+            _setTokenURI(newTokenId, string(abi.encodePacked(_baseURI(),newTokenId,baseExtension)));
         }
     }
 
