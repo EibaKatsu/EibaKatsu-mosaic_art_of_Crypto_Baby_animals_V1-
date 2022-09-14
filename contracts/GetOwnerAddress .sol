@@ -2,7 +2,8 @@
 // Copyright (c) 2022 Eiba
 
 /*
-  CBAのコントラクトから、指定するTokenIdを所有するオーナーを取得する
+  別のERC721コントラクトから、指定するTokenIdを所有するオーナーを取得する
+
 **/
 
 pragma solidity ^0.8.1;
@@ -10,18 +11,17 @@ pragma solidity ^0.8.1;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 contract GetOwnerAddress {
-    // Contract of Crypto Baby Animals
-    ERC721 cbaContract = ERC721(0x495f947276749Ce646f68AC8c248420045cb7b5e);
+    // Contract of Crypto Ninja Partners
+    ERC721 cnpContract = ERC721(0x845a007D9f283614f403A24E3eB3455f720559ca);
 
-    function getCbaOwner(uint256 _tokenId) public view returns (address){
-        // CBAコントラクトからオーナーアドレスを取得
-        address cbaOwner = cbaContract.ownerOf(_tokenId);
+    function getOwner(uint256 _tokenId) public view returns (address){
+        // CNPコントラクトからオーナーアドレスを取得
+        address owner = cnpContract.ownerOf(_tokenId);
 
-        return cbaOwner;
-        
+        return owner;
     }
 
     function name () public view returns (string memory){
-        return cbaContract.name();
+        return cnpContract.name();
     }
 }

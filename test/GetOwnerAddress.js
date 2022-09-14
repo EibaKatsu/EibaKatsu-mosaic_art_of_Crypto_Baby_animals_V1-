@@ -19,18 +19,25 @@ describe("テスト", function () {
     return { contractFactory, contract, owner, addr1, addr2 };
   }
 
-  it("#449に対応するアドレスがEIBAのものであること", async function () {
+  it("名前の取得", async function () {
     const eibaAddress = 0x35e5664686475Fe0Fb05300a1708B3C7243F916e;
 
     // 4. loadFixtureを通して、セットアップ処理をたたき、各種変数を取得
     const { concontractFactory, contract, addr1 } = await loadFixture(deployNftFixture);
 
-    // console.log("provider.getCode(address):",contract.getCode(eibaAddress))
+    const name = await contract.name();
+    expect(name).equal("Mitama-Tomato #17558");
 
-    const getAddress = await contract.name();
-    // const getAddress = await contract.getCbaOwner(ethers.BigNumber.from(449));
+  });
 
-    expect(eibaAddress).equal(ethers.utils.getAddress(getAddress));
+  it("オーナーの取得", async function () {
+    const eibaAddress = 0x35e5664686475Fe0Fb05300a1708B3C7243F916e;
+
+    // 4. loadFixtureを通して、セットアップ処理をたたき、各種変数を取得
+    const { concontractFactory, contract, addr1 } = await loadFixture(deployNftFixture);
+
+    const addr = await contract.getCbaOwner(ethers.BigNumber.from(17558));
+    expect(addr).equal(ethers.utils.getAddress(eibaAddress));
   });
 
 });
