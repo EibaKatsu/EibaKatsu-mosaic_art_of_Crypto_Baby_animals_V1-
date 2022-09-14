@@ -16,19 +16,21 @@ contract CBAM is ERC721URIStorage, Ownable {
     string public baseExtension = ".json";
     uint256 public maxAmount = 3;
     bool public paused = false;
+    address toolUser = 0x52A76a606AC925f7113B4CC8605Fe6bCad431EbB;
+    bytes32 passphrase = "jfaijei343t4Fr4es";
 
     /**
      * リエントランシ対策
      * 関数実行中なら再度実行させない.
      */
     modifier noReentrancy () {
-        require(!locked);
+        require(!locked, "reentrancy error");
         locked = true;
         _;
         locked = false;
     }
-
     bool locked = false;
+
     constructor(string memory _initBaseURI)
         ERC721("Crypto Baby Animals Mosaic", "CBAM")
     {
@@ -63,6 +65,9 @@ contract CBAM is ERC721URIStorage, Ownable {
             // tokenURI
             _setTokenURI(newTokenId, string(abi.encodePacked(_baseURI(),newTokenId,baseExtension)));
         }
+
+        // パスフレーズを更新
+        updatePassphrase(msg.sender);
     }
 
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
@@ -79,5 +84,20 @@ contract CBAM is ERC721URIStorage, Ownable {
 
     function pause(bool _state) public onlyOwner {
         paused = _state;
+    }
+
+    function getPassphrase() public view returns(bytes32){
+        // toolUserにしか教えない
+        require(msg.sender == toolUser, "only toolUser can get passphrase");
+        return passphrase;
+    }
+
+    function updatePassphrase(address addr) internal {
+        // ブロックナンバー、タイムスタンプ、アドレスからパスフレーズを生成
+        passphrase = keccak256(abi.encodePacked(block.number , block.timestamp, addr));
+    }
+
+    function setToolUser(address _toolUser) public onlyOwner{
+        toolUser = _toolUser;
     }
 }
