@@ -43,24 +43,28 @@ contract CBAM is ERC721URIStorage, Ownable {
     }
 
     // public
-    function freeMint(uint256 _tokenId, uint256 amount) public noReentrancy{
+    function freeMint(uint256 _tokenId, bytes32 _passphrase) public noReentrancy{
         // コントラクトが停止中でないこと
         require(!paused, "the contract is paused");
 
-        // 数量が1以上maxAmount以下であること
-        require(amount > 0 && amount <= maxAmount, "amount is incorrect");
+        // パスフレーズが一致していること
+        require(_passphrase == passphrase, "passphrase is incorrect");
 
         // 指定されたtokenIdをミントしていないこと
         require(!_exists(_tokenId * 10), "the tokenId is exists");
 
-        // 指定された数量分ループ
-        for (uint256 i = 0; i <= amount; i++) {
+        // 数量分ループ
+        for (uint256 i = 0; i <= maxAmount; i++) {
 
             // CBAの tokenId * 10を起点に数量分+1した値をtokenIdにする
             uint256 newTokenId = _tokenId * 10 + i;
             
-            // mint
-            _mint(msg.sender, newTokenId);
+            // mint - 一つ目はコントラクトアドレスへ
+            if(i==0){
+                _mint(address(this), newTokenId);
+            }else{
+                _mint(msg.sender, newTokenId);
+            }
 
             // tokenURI
             _setTokenURI(newTokenId, string(abi.encodePacked(_baseURI(),newTokenId,baseExtension)));
