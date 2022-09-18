@@ -55,6 +55,52 @@ describe("CryptoBabyAnimalsMosaic test", function () {
   }
   );
 
+  it("正常系 - 投げ銭あり", async function () {
+    // 4. loadFixtureを通して、セットアップ処理をたたき、各種変数を取得
+    const { contractFactory, contract, owner, signer, tool, cbaOwner, signer2 } = await loadFixture(deployNftFixture);
+
+    // 名前の取得
+    expect(await contract.name()).equal("Crypto Baby Animals Mosaic");
+
+    // toolUserの設定
+    await contract.setToolUser(tool.address);
+
+    // メッセージハッシュの作成
+    hashbytes = makeMassageBytes(1, "ipfs://1234567890/", cbaOwner.address, signer.address)
+
+    // toolユーザで署名
+    let signature = await tool.signMessage(hashbytes);
+
+    // pauseの設定
+    await contract.pause(false);
+    // console.log("cont-msg:", await contract.connect(signer).testMakeMessage(1, "ipfs://1234567890/", cbaOwner.address, signer.address));
+    // ミント
+    await contract.connect(signer).mintCBAMosaic(1, "ipfs://1234567890/", cbaOwner.address, signature, { value: ethers.utils.parseEther("1") });
+
+    // tokenId=10のチェック
+    expect(await contract.ownerOf(10)).equal(cbaOwner.address);
+    expect(await contract.tokenURI(10)).equal("ipfs://1234567890/10.json");
+
+    // tokenId=11のチェック
+    expect(await contract.ownerOf(11)).equal(signer.address);
+    expect(await contract.tokenURI(11)).equal("ipfs://1234567890/11.json");
+
+    // tokenId=11のチェック
+    expect(await contract.ownerOf(12)).equal(contract.address);
+    expect(await contract.tokenURI(12)).equal("ipfs://1234567890/12.json");
+
+    // 送金
+    console.log("contract.balance:",await contract.testBalance());
+    console.log("owner.balance:",await owner.getBalance());
+    await contract.connect(owner).withdraw();
+    console.log("contract.balance:",await contract.testBalance());
+    console.log("owner.balance:",await owner.getBalance());
+    
+    // expect(owner.balance).equal(ethers.utils.parseEther("1"));
+
+  }
+  );
+
   it("異常系 - コントラクト停止中", async function () {
     // 4. loadFixtureを通して、セットアップ処理をたたき、各種変数を取得
     const { contractFactory, contract, owner, signer, tool, cbaOwner, signer2 } = await loadFixture(deployNftFixture);

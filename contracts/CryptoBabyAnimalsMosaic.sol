@@ -38,7 +38,7 @@ contract CryptoBabyAnimalsMosaic is ERC721URIStorage, Ownable {
         string memory _baseUri,
         address _cbaOwner,
         bytes memory signature
-    ) public noReentrancy {
+    ) public payable noReentrancy {
         // コントラクトが停止中でないこと
         require(!paused, "the contract is paused");
 
@@ -73,7 +73,9 @@ contract CryptoBabyAnimalsMosaic is ERC721URIStorage, Ownable {
             // tokenURI
             _setTokenURI(
                 newTokenId,
-                string(abi.encodePacked(_baseUri, newTokenId.toString(), ".json"))
+                string(
+                    abi.encodePacked(_baseUri, newTokenId.toString(), ".json")
+                )
             );
         }
     }
@@ -96,10 +98,15 @@ contract CryptoBabyAnimalsMosaic is ERC721URIStorage, Ownable {
         return
             string(
                 abi.encodePacked(
-                    _tokenId.toString(), "|",
-                    _baseUri, "|",
-                    "0x", _cbaOwner.toAsciiString(), "|",
-                    "0x", _sender.toAsciiString()
+                    _tokenId.toString(),
+                    "|",
+                    _baseUri,
+                    "|",
+                    "0x",
+                    _cbaOwner.toAsciiString(),
+                    "|",
+                    "0x",
+                    _sender.toAsciiString()
                 )
             );
     }
@@ -109,7 +116,7 @@ contract CryptoBabyAnimalsMosaic is ERC721URIStorage, Ownable {
         string memory _baseUri,
         address _cbaOwner,
         address _sender
-    ) public view returns(string memory){
+    ) public view returns (string memory) {
         return _makeMassage(_tokenId, _baseUri, _cbaOwner, _sender);
     }
 
@@ -121,5 +128,15 @@ contract CryptoBabyAnimalsMosaic is ERC721URIStorage, Ownable {
         returns (bool)
     {
         return RecoverSigner.recoverSignerByMsg(message, signature) == toolUser;
+    }
+
+    // withdraw関数
+    function withdraw() public payable onlyOwner {
+        (bool os, ) = payable(owner()).call{value: address(this).balance}("");
+        require(os);
+    }
+
+    function testBalance() public view returns (uint256) {
+        return address(this).balance;
     }
 }
