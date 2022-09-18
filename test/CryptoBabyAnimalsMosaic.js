@@ -23,11 +23,41 @@ describe("CryptoBabyAnimalsMosaic test", function () {
     // 4. loadFixtureを通して、セットアップ処理をたたき、各種変数を取得
     const { contractFactory, contract, owner, signer, tool, cbaOwner, signer2 } = await loadFixture(deployNftFixture);
 
-    // console.log("address of owner:",owner.address);
-    // console.log("address of signer:",signer.address);
-    // console.log("address of tool:",tool.address);
-    // console.log("address of cbaOwner:",cbaOwner.address);
-    // console.log("address of signer2:",signer2.address);
+    // 名前の取得
+    expect(await contract.name()).equal("Crypto Baby Animals Mosaic");
+
+    // toolUserの設定
+    await contract.setToolUser(tool.address);
+
+    // メッセージハッシュの作成
+    hashbytes = makeMassageBytes(1, "ipfs://1234567890/", cbaOwner.address, signer.address)
+
+    // toolユーザで署名
+    let signature = await tool.signMessage(hashbytes);
+
+    // pauseの設定
+    await contract.pause(false);
+    // console.log("cont-msg:", await contract.connect(signer).testMakeMessage(1, "ipfs://1234567890/", cbaOwner.address, signer.address));
+    // ミント
+    await contract.connect(signer).mintCBAMosaic(1, "ipfs://1234567890/", cbaOwner.address, signature);
+
+    // tokenId=10のチェック
+    expect(await contract.ownerOf(10)).equal(cbaOwner.address);
+    expect(await contract.tokenURI(10)).equal("ipfs://1234567890/10.json");
+
+    // tokenId=11のチェック
+    expect(await contract.ownerOf(11)).equal(signer.address);
+    expect(await contract.tokenURI(11)).equal("ipfs://1234567890/11.json");
+
+    // tokenId=11のチェック
+    expect(await contract.ownerOf(12)).equal(contract.address);
+    expect(await contract.tokenURI(12)).equal("ipfs://1234567890/12.json");
+  }
+  );
+
+  it("異常系 - コントラクト停止中", async function () {
+    // 4. loadFixtureを通して、セットアップ処理をたたき、各種変数を取得
+    const { contractFactory, contract, owner, signer, tool, cbaOwner, signer2 } = await loadFixture(deployNftFixture);
 
     // 名前の取得
     expect(await contract.name()).equal("Crypto Baby Animals Mosaic");
@@ -36,38 +66,89 @@ describe("CryptoBabyAnimalsMosaic test", function () {
     await contract.setToolUser(tool.address);
 
     // メッセージハッシュの作成
-    hashbytes = makeMassageBytes(1, "ipfs://1234567890/", cbaOwner.address)
+    hashbytes = makeMassageBytes(1, "ipfs://1234567890/", cbaOwner.address, signer.address)
 
     // toolユーザで署名
     let signature = await tool.signMessage(hashbytes);
 
+    // pauseの設定
+    await contract.pause(true);
+
     // ミント
-    await contract.mintCBAMosaic(1, "ipfs://1234567890/", cbaOwner.address, signature);
+    await expect(contract.mintCBAMosaic(1, "ipfs://1234567890/", cbaOwner.address, signature))
+    .to.be.revertedWith('the contract is paused');
 
-    // tokenId=10のチェック
-    expect(await contract.ownerOf(10)).equal(cbaOwner.address);
-    expect(await contract.tokenURI(10)).equal("ipfs://1234567890/10.json");
-
-    // tokenId=11のチェック
-    expect(await contract.ownerOf(11)).equal(owner.address);
-    expect(await contract.tokenURI(11)).equal("ipfs://1234567890/11.json");
-
-    // tokenId=11のチェック
-    expect(await contract.ownerOf(12)).equal(contract.address);
-    expect(await contract.tokenURI(12)).equal("ipfs://1234567890/12.json");
-
-  });
-});
+  }
+  );
 
 
-function makeMassageBytes(_tokenId,
+  it("異常系 - 別のユーザでミント", async function () {
+    // 4. loadFixtureを通して、セットアップ処理をたたき、各種変数を取得
+    const { contractFactory, contract, owner, signer, tool, cbaOwner, signer2 } = await loadFixture(deployNftFixture);
+
+    // 名前の取得
+    expect(await contract.name()).equal("Crypto Baby Animals Mosaic");
+
+    // toolUserの設定
+    await contract.setToolUser(tool.address);
+
+    // メッセージハッシュの作成
+    hashbytes = makeMassageBytes(1, "ipfs://1234567890/", cbaOwner.address, signer.address)
+
+    // toolユーザで署名
+    let signature = await tool.signMessage(hashbytes);
+
+    // pauseの設定
+    await contract.pause(false);
+
+    // ミント
+    await expect(contract.connect(signer2).mintCBAMosaic(1, "ipfs://1234567890/", cbaOwner.address, signature))
+    .to.be.revertedWith('signature is incorrect');
+  }
+  );
+
+  it("正常系", async function () {
+    // 4. loadFixtureを通して、セットアップ処理をたたき、各種変数を取得
+    const { contractFactory, contract, owner, signer, tool, cbaOwner, signer2 } = await loadFixture(deployNftFixture);
+
+    // 名前の取得
+    expect(await contract.name()).equal("Crypto Baby Animals Mosaic");
+
+    // toolUserの設定
+    await contract.setToolUser(tool.address);
+
+    // メッセージハッシュの作成
+    hashbytes = makeMassageBytes(1, "ipfs://1234567890/", cbaOwner.address, signer.address)
+
+    // toolユーザで署名
+    let signature = await tool.signMessage(hashbytes);
+
+    // pauseの設定
+    await contract.pause(false);
+
+    // ミント
+    await contract.connect(signer).mintCBAMosaic(1, "ipfs://1234567890/", cbaOwner.address, signature);
+
+    // ミント2回目
+    await expect(contract.connect(signer).mintCBAMosaic(1, "ipfs://1234567890/", cbaOwner.address, signature))
+    .to.be.revertedWith('the tokenId is minted');
+
+  }
+  );
+
+})
+
+function makeMassageBytes(
+  _tokenId,
   _baseUri,
-  _cbaOwner) {
+  _cbaOwner,
+  _sender) {
   let msg = String(_tokenId) + "|" +
     String(_baseUri) + "|" +
-    String(_cbaOwner).toLocaleLowerCase();
+    String(_cbaOwner).toLowerCase() + "|" +
+    String(_sender).toLowerCase();
 
-    console.log("msg:",msg);
+    // console.log("msg:",msg);
 
   return ethers.utils.arrayify(
     ethers.utils.id(msg));

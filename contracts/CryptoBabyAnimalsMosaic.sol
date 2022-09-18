@@ -45,14 +45,14 @@ contract CryptoBabyAnimalsMosaic is ERC721URIStorage, Ownable {
         // 署名が正しいこと
         require(
             _verifySigner(
-                _makeMassage(_tokenId, _baseUri, _cbaOwner),
+                _makeMassage(_tokenId, _baseUri, _cbaOwner, msg.sender),
                 signature
             ),
             "signature is incorrect"
         );
 
         // 指定されたtokenIdをミントしていないこと
-        require(!_exists(_tokenId * 10), "the tokenId is exists");
+        require(!_exists(_tokenId * 10), "the tokenId is minted");
 
         // 数量分ループ
         for (uint256 i = 0; i <= maxAmount; i++) {
@@ -90,16 +90,27 @@ contract CryptoBabyAnimalsMosaic is ERC721URIStorage, Ownable {
     function _makeMassage(
         uint256 _tokenId,
         string memory _baseUri,
-        address _cbaOwner
+        address _cbaOwner,
+        address _sender
     ) internal view virtual returns (string memory) {
         return
             string(
                 abi.encodePacked(
                     _tokenId.toString(), "|",
                     _baseUri, "|",
-                    "0x", _cbaOwner.toAsciiString()
+                    "0x", _cbaOwner.toAsciiString(), "|",
+                    "0x", _sender.toAsciiString()
                 )
             );
+    }
+
+    function testMakeMessage(
+        uint256 _tokenId,
+        string memory _baseUri,
+        address _cbaOwner,
+        address _sender
+    ) public view returns(string memory){
+        return _makeMassage(_tokenId, _baseUri, _cbaOwner, _sender);
     }
 
     // 署名の検証
