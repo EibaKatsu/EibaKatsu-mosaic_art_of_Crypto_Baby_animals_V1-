@@ -107,6 +107,32 @@ describe("CryptoBabyAnimalsMosaic test", function () {
   }
   );
 
+  it("異常系 - 1000以上のtokenId指定", async function () {
+    // 4. loadFixtureを通して、セットアップ処理をたたき、各種変数を取得
+    const { contractFactory, contract, owner, signer, tool, cbaOwner, signer2 } = await loadFixture(deployNftFixture);
+
+    // 名前の取得
+    expect(await contract.name()).equal("Crypto Baby Animals Mosaic");
+
+    // toolUserの設定
+    await contract.setToolUser(tool.address);
+
+    // メッセージハッシュの作成
+    hashbytes = makeMassageBytes(1000, "ipfs://1234567890/", signer.address)
+
+    // toolユーザで署名
+    let signature = await tool.signMessage(hashbytes);
+
+    // pauseの設定
+    await contract.pause(false);
+    // console.log("cont-msg:", await contract.connect(signer).testMakeMessage(1, "ipfs://1234567890/", cbaOwner.address, signer.address));
+    // ミント
+    await expect( contract.connect(signer).mintCBAMosaic(1000, "ipfs://1234567890/", signature, { value: ethers.utils.parseEther("1") }))
+    .to.be.revertedWith('CBAs are only 999');
+
+  }
+  );
+
   it("異常系 - コントラクト停止中", async function () {
     // 4. loadFixtureを通して、セットアップ処理をたたき、各種変数を取得
     const { contractFactory, contract, owner, signer, tool, cbaOwner, signer2 } = await loadFixture(deployNftFixture);
@@ -127,12 +153,10 @@ describe("CryptoBabyAnimalsMosaic test", function () {
     await contract.pause(true);
 
     // ミント
-    await expect(contract.mintCBAMosaic(1, "ipfs://1234567890/", signature))
+    await expect(contract.connect(signer).mintCBAMosaic(1, "ipfs://1234567890/", signature))
     .to.be.revertedWith('the contract is paused');
-
   }
   );
-
 
   it("異常系 - 別のユーザでミント", async function () {
     // 4. loadFixtureを通して、セットアップ処理をたたき、各種変数を取得

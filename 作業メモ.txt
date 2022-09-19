@@ -47,3 +47,9 @@ npm install --save-dev @nomicfoundation/hardhat-network-helpers
 
 # テスト実行
 npx hardhat test
+
+# DOTENVインストール
+npm install dotenv --save
+
+# デプロイ
+npx hardhat run scripts/deploy.js --network rinkeby

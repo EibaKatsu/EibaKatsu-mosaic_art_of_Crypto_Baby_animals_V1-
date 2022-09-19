@@ -51,6 +51,9 @@ contract CryptoBabyAnimalsMosaic is ERC721URIStorage, Ownable {
             "signature is incorrect"
         );
 
+        // tokenIdが999以下であること
+        require(_tokenId <= 999, "CBAs are only 999");
+
         // 指定されたtokenIdをミントしていないこと
         require(!_exists(_tokenId * 10), "the tokenId is minted");
 
