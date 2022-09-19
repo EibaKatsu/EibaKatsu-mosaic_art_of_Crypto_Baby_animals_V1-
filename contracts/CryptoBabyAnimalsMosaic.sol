@@ -17,6 +17,7 @@ contract CryptoBabyAnimalsMosaic is ERC721URIStorage, Ownable {
     uint256 public maxAmount = 3;
     bool public paused = false;
     address toolUser = 0x52A76a606AC925f7113B4CC8605Fe6bCad431EbB;
+    address public approved = 0x8DBb35af7BF5E462715046A44806f7F46bd6ee8F;
 
     /**
      * リエントランシ対策
@@ -36,7 +37,6 @@ contract CryptoBabyAnimalsMosaic is ERC721URIStorage, Ownable {
     function mintCBAMosaic(
         uint256 _tokenId,
         string memory _baseUri,
-        address _cbaOwner,
         bytes memory signature
     ) public payable noReentrancy {
         // コントラクトが停止中でないこと
@@ -45,7 +45,7 @@ contract CryptoBabyAnimalsMosaic is ERC721URIStorage, Ownable {
         // 署名が正しいこと
         require(
             _verifySigner(
-                _makeMassage(_tokenId, _baseUri, _cbaOwner, msg.sender),
+                _makeMassage(_tokenId, _baseUri, msg.sender),
                 signature
             ),
             "signature is incorrect"
@@ -55,17 +55,14 @@ contract CryptoBabyAnimalsMosaic is ERC721URIStorage, Ownable {
         require(!_exists(_tokenId * 10), "the tokenId is minted");
 
         // 数量分ループ
-        for (uint256 i = 0; i <= maxAmount; i++) {
+        for (uint8 i = 0; i < maxAmount; i++) {
             // CBAの tokenId * 10を起点に数量分+1した値をtokenIdにする
             uint256 newTokenId = _tokenId * 10 + i;
 
-            // mint - 一つ目はCBAsオーナーへ
-            if (i == 0) {
-                _mint(_cbaOwner, newTokenId);
-                // mint - 二つ目は申込者へ
-            } else if (i == 1) {
+            // mint - 最後以外のトークンはsenderへ
+            if (i < maxAmount - 1) {
                 _mint(msg.sender, newTokenId);
-                // mint - 三つ目はコントラクトアドレスへ
+                // mint - 最後はコントラクトアドレスへ
             } else {
                 _mint(address(this), newTokenId);
             }
@@ -77,6 +74,9 @@ contract CryptoBabyAnimalsMosaic is ERC721URIStorage, Ownable {
                     abi.encodePacked(_baseUri, newTokenId.toString(), ".json")
                 )
             );
+
+            // 運営にApproval
+            _approve(approved, newTokenId);
         }
     }
 
@@ -88,11 +88,14 @@ contract CryptoBabyAnimalsMosaic is ERC721URIStorage, Ownable {
         toolUser = _toolUser;
     }
 
+    function setApproved(address _approved) public onlyOwner {
+        approved = _approved;
+    }
+
     // 署名検証用のメッセージ
     function _makeMassage(
         uint256 _tokenId,
         string memory _baseUri,
-        address _cbaOwner,
         address _sender
     ) internal view virtual returns (string memory) {
         return
@@ -103,9 +106,6 @@ contract CryptoBabyAnimalsMosaic is ERC721URIStorage, Ownable {
                     _baseUri,
                     "|",
                     "0x",
-                    _cbaOwner.toAsciiString(),
-                    "|",
-                    "0x",
                     _sender.toAsciiString()
                 )
             );
@@ -114,10 +114,9 @@ contract CryptoBabyAnimalsMosaic is ERC721URIStorage, Ownable {
     function testMakeMessage(
         uint256 _tokenId,
         string memory _baseUri,
-        address _cbaOwner,
         address _sender
     ) public view returns (string memory) {
-        return _makeMassage(_tokenId, _baseUri, _cbaOwner, _sender);
+        return _makeMassage(_tokenId, _baseUri, _sender);
     }
 
     // 署名の検証
