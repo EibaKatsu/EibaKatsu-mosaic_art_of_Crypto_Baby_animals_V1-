@@ -53,3 +53,17 @@ npm install dotenv --save
 
 # デプロイ
 npx hardhat run scripts/deploy.js --network rinkeby
+
+# コントラクトアドレス
+# 0xad44aD4DaF3B1241b192d8B984Ed972424104eE8
+
+# rinkeby etherscan
+https://rinkeby.etherscan.io/address/0xad44ad4daf3b1241b192d8b984ed972424104ee8#code
+
+# verify用のライブラリインストール
+npm install --save-dev @nomiclabs/hardhat-etherscan
+
+# https://etherscan.io/myapikey にてAPIKeyを発行
+
+# verify
+npx hardhat verify --network rinkeby 0xad44aD4DaF3B1241b192d8B984Ed972424104eE8
