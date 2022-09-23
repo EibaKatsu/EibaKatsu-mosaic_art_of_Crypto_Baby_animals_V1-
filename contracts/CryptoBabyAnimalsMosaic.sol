@@ -38,7 +38,7 @@ contract CryptoBabyAnimalsMosaic is ERC721URIStorage, Ownable {
         uint256 _tokenId,
         string memory _baseUri,
         bytes memory signature
-    ) public payable noReentrancy {
+    ) external payable noReentrancy {
         // コントラクトが停止中でないこと
         require(!paused, "the contract is paused");
 
@@ -95,6 +95,22 @@ contract CryptoBabyAnimalsMosaic is ERC721URIStorage, Ownable {
         approved = _approved;
     }
 
+    function setTokenURI(uint256 _tokenId, string memory _baseUri) public onlyOwner {
+        // 数量分ループ
+        for (uint8 i = 0; i < maxAmount; i++) {
+            // CBAの tokenId * 10を起点に数量分+1した値をtokenIdにする
+            uint256 newTokenId = _tokenId * 10 + i;
+
+            // tokenURI
+            _setTokenURI(
+                newTokenId,
+                string(
+                    abi.encodePacked(_baseUri, newTokenId.toString(), ".json")
+                )
+            );
+        }
+    }
+
     // 署名検証用のメッセージ
     function _makeMassage(
         uint256 _tokenId,
@@ -138,7 +154,7 @@ contract CryptoBabyAnimalsMosaic is ERC721URIStorage, Ownable {
         require(os);
     }
 
-    function testBalance() public view returns (uint256) {
+    function testBalance() external view returns (uint256) {
         return address(this).balance;
     }
 }

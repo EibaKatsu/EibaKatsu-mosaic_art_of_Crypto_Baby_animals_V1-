@@ -58,6 +58,15 @@ describe("CryptoBabyAnimalsMosaic test", function () {
     expect(await contract.ownerOf(12)).equal(contract.address);
     expect(await contract.tokenURI(12)).equal("ipfs://1234567890/12.json");
     expect(await contract.getApproved(12)).equal(signer2.address);
+
+    // tokenURIの変更
+    await contract.setTokenURI(1, "ipfs://2345678901/");
+
+    // tokenURIが変更されたことのチェック
+    expect(await contract.tokenURI(10)).equal("ipfs://2345678901/10.json");
+    expect(await contract.tokenURI(11)).equal("ipfs://2345678901/11.json");
+    expect(await contract.tokenURI(12)).equal("ipfs://2345678901/12.json");
+
   }
   );
 
@@ -183,7 +192,7 @@ describe("CryptoBabyAnimalsMosaic test", function () {
   }
   );
 
-  it("正常系", async function () {
+  it("異常系 - 同じtokenIdでミント", async function () {
     // 4. loadFixtureを通して、セットアップ処理をたたき、各種変数を取得
     const { contractFactory, contract, owner, signer, tool, cbaOwner, signer2 } = await loadFixture(deployNftFixture);
 
