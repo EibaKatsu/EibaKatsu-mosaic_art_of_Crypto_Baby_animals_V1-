@@ -95,6 +95,10 @@ contract CryptoBabyAnimalsMosaic is ERC721URIStorage, Ownable {
         approved = _approved;
     }
 
+    function isExists(uint256 _tokenId) public view returns(bool){
+        return _exists(_tokenId);
+    }
+
     function setTokenURI(uint256 _tokenId, string memory _baseUri) public onlyOwner {
         // 数量分ループ
         for (uint8 i = 0; i < maxAmount; i++) {

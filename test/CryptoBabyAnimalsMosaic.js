@@ -40,7 +40,12 @@ describe("CryptoBabyAnimalsMosaic test", function () {
 
     // pauseの設定
     await contract.pause(false);
-    // console.log("cont-msg:", await contract.connect(signer).testMakeMessage(1, "ipfs://1234567890/", cbaOwner.address, signer.address));
+
+    // tokenIdが存在するか
+    expect(await contract.isExists(10)).equal(false);
+    expect(await contract.isExists(11)).equal(false);
+    expect(await contract.isExists(12)).equal(false);
+
     // ミント
     await contract.connect(signer).mintCBAMosaic(1, "ipfs://1234567890/", signature);
 
@@ -58,6 +63,10 @@ describe("CryptoBabyAnimalsMosaic test", function () {
     expect(await contract.ownerOf(12)).equal(contract.address);
     expect(await contract.tokenURI(12)).equal("ipfs://1234567890/12.json");
     expect(await contract.getApproved(12)).equal(signer2.address);
+
+    expect(await contract.isExists(10)).equal(true);
+    expect(await contract.isExists(11)).equal(true);
+    expect(await contract.isExists(12)).equal(true);
 
     // tokenURIの変更
     await contract.setTokenURI(1, "ipfs://2345678901/");
