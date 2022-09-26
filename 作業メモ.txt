@@ -51,8 +51,11 @@ npx hardhat test
 # DOTENVインストール
 npm install dotenv --save
 
+# hardhat関連のインストール
+npm install @nomicfoundation/hardhat-toolbox
+
 # デプロイ
-npx hardhat run scripts/deploy.js --network rinkeby
+npx hardhat run scripts/deploy.js --network goerli
 
 # コントラクトアドレス
 # 0xad44aD4DaF3B1241b192d8B984Ed972424104eE8
@@ -66,4 +69,9 @@ npm install --save-dev @nomiclabs/hardhat-etherscan
 # https://etherscan.io/myapikey にてAPIKeyを発行
 
 # verify
-npx hardhat verify --network rinkeby 0xad44aD4DaF3B1241b192d8B984Ed972424104eE8
+npx hardhat verify --network goerli 0x55D48E856DB1933A2F63d30eb0055b8840B1B165
+
+
+
+npm uninstall @nomiclabs/hardhat-waffle ethereum-waffle
+npm install --save-dev @nomicfoundation/hardhat-chai-matchers
