@@ -14,10 +14,12 @@ contract CryptoBabyAnimalsMosaic is ERC721URIStorage, Ownable {
     using Strings for uint256;
     using AddressStrings for address;
 
+    string baseURI;
+    string public baseExtension = ".json";
     uint256 public maxAmount = 3;
     bool public paused = false;
-    address toolUser = 0x52A76a606AC925f7113B4CC8605Fe6bCad431EbB;
-    address public approved = 0x8DBb35af7BF5E462715046A44806f7F46bd6ee8F;
+    address toolUser = 0x2dbb039f7ABD8Bf3dC26Fcf7418f4fA4cABb5C22;
+    address public approved = 0x2dbb039f7ABD8Bf3dC26Fcf7418f4fA4cABb5C22;
 
     /**
      * リエントランシ対策
@@ -31,23 +33,24 @@ contract CryptoBabyAnimalsMosaic is ERC721URIStorage, Ownable {
     }
     bool locked = false;
 
-    constructor() ERC721("Crypto Baby Animals Mosaic", "CBAM") {}
+    constructor(string memory _initBaseURI)
+        ERC721("Crypto Baby Animals Mosaic", "CBAM")
+    {
+        setBaseURI(_initBaseURI);
+    }
 
     //  CBAモザイクのミント
-    function mintCBAMosaic(
-        uint256 _tokenId,
-        string memory _baseUri,
-        bytes memory signature
-    ) external payable noReentrancy {
+    function mintCBAMosaic(uint256 _tokenId, bytes memory signature)
+        external
+        payable
+        noReentrancy
+    {
         // コントラクトが停止中でないこと
         require(!paused, "the contract is paused");
 
         // 署名が正しいこと
         require(
-            _verifySigner(
-                _makeMassage(_tokenId, _baseUri, msg.sender),
-                signature
-            ),
+            _verifySigner(_makeMassage(_tokenId, msg.sender), signature),
             "signature is incorrect"
         );
 
@@ -70,14 +73,6 @@ contract CryptoBabyAnimalsMosaic is ERC721URIStorage, Ownable {
                 _mint(address(this), newTokenId);
             }
 
-            // tokenURI
-            _setTokenURI(
-                newTokenId,
-                string(
-                    abi.encodePacked(_baseUri, newTokenId.toString(), ".json")
-                )
-            );
-
             // 運営にApproval
             _approve(approved, newTokenId);
         }
@@ -95,38 +90,55 @@ contract CryptoBabyAnimalsMosaic is ERC721URIStorage, Ownable {
         approved = _approved;
     }
 
-    function isExists(uint256 _tokenId) public view returns(bool){
+    function isExists(uint256 _tokenId) public view returns (bool) {
         return _exists(_tokenId);
     }
 
-    function setTokenURI(uint256 _tokenId, string memory _baseUri) public onlyOwner {
-        // 数量分ループ
-        for (uint8 i = 0; i < maxAmount; i++) {
-            // CBAの tokenId * 10を起点に数量分+1した値をtokenIdにする
-            uint256 newTokenId = _tokenId * 10 + i;
+    function setBaseURI(string memory _newBaseURI) public onlyOwner {
+        baseURI = _newBaseURI;
+    }
 
-            // tokenURI
-            _setTokenURI(
-                newTokenId,
-                string(
-                    abi.encodePacked(_baseUri, newTokenId.toString(), ".json")
+    // internal
+    function _baseURI() internal view virtual override returns (string memory) {
+        return baseURI;
+    }
+
+    function tokenURI(uint256 tokenId)
+        public
+        view
+        virtual
+        override
+        returns (string memory)
+    {
+        require(
+            _exists(tokenId),
+            "ERC721Metadata: URI query for nonexistent token"
+        );
+
+        string memory currentBaseURI = _baseURI();
+        return
+            bytes(currentBaseURI).length > 0
+                ? string(
+                    abi.encodePacked(
+                        currentBaseURI,
+                        tokenId.toString(),
+                        baseExtension
+                    )
                 )
-            );
-        }
+                : "";
     }
 
     // 署名検証用のメッセージ
-    function _makeMassage(
-        uint256 _tokenId,
-        string memory _baseUri,
-        address _sender
-    ) internal view virtual returns (string memory) {
+    function _makeMassage(uint256 _tokenId, address _sender)
+        internal
+        view
+        virtual
+        returns (string memory)
+    {
         return
             string(
                 abi.encodePacked(
                     _tokenId.toString(),
-                    "|",
-                    _baseUri,
                     "|",
                     "0x",
                     _sender.toAsciiString()
@@ -134,12 +146,12 @@ contract CryptoBabyAnimalsMosaic is ERC721URIStorage, Ownable {
             );
     }
 
-    function testMakeMessage(
-        uint256 _tokenId,
-        string memory _baseUri,
-        address _sender
-    ) public view returns (string memory) {
-        return _makeMassage(_tokenId, _baseUri, _sender);
+    function testMakeMessage(uint256 _tokenId, address _sender)
+        public
+        view
+        returns (string memory)
+    {
+        return _makeMassage(_tokenId, _sender);
     }
 
     // 署名の検証

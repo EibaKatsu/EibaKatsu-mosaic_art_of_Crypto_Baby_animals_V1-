@@ -12,7 +12,7 @@ describe("CryptoBabyAnimalsMosaic test", function () {
 
     const [owner, signer, tool, cbaOwner, signer2] = await ethers.getSigners();
 
-    const contract = await contractFactory.deploy();
+    const contract = await contractFactory.deploy("ipfs://1234567890/");
     await contract.deployed();
 
     // 3. itから呼ばれた際に、返却する変数たちを定義
@@ -33,7 +33,7 @@ describe("CryptoBabyAnimalsMosaic test", function () {
     await contract.setApproved(signer2.address);
 
     // メッセージハッシュの作成
-    hashbytes = makeMassageBytes(1, "ipfs://1234567890/", signer.address)
+    hashbytes = makeMassageBytes(1, signer.address)
 
     // toolユーザで署名
     let signature = await tool.signMessage(hashbytes);
@@ -47,7 +47,7 @@ describe("CryptoBabyAnimalsMosaic test", function () {
     expect(await contract.isExists(12)).equal(false);
 
     // ミント
-    await contract.connect(signer).mintCBAMosaic(1, "ipfs://1234567890/", signature);
+    await contract.connect(signer).mintCBAMosaic(1, signature);
 
     // tokenId=10のチェック
     expect(await contract.ownerOf(10)).equal(signer.address);
@@ -69,7 +69,7 @@ describe("CryptoBabyAnimalsMosaic test", function () {
     expect(await contract.isExists(12)).equal(true);
 
     // tokenURIの変更
-    await contract.setTokenURI(1, "ipfs://2345678901/");
+    await contract.setBaseURI("ipfs://2345678901/");
 
     // tokenURIが変更されたことのチェック
     expect(await contract.tokenURI(10)).equal("ipfs://2345678901/10.json");
@@ -90,7 +90,7 @@ describe("CryptoBabyAnimalsMosaic test", function () {
     await contract.setToolUser(tool.address);
 
     // メッセージハッシュの作成
-    hashbytes = makeMassageBytes(1, "ipfs://1234567890/", signer.address)
+    hashbytes = makeMassageBytes(1, signer.address)
 
     // toolユーザで署名
     let signature = await tool.signMessage(hashbytes);
@@ -99,7 +99,7 @@ describe("CryptoBabyAnimalsMosaic test", function () {
     await contract.pause(false);
     // console.log("cont-msg:", await contract.connect(signer).testMakeMessage(1, "ipfs://1234567890/", cbaOwner.address, signer.address));
     // ミント
-    await contract.connect(signer).mintCBAMosaic(1, "ipfs://1234567890/", signature, { value: ethers.utils.parseEther("1") });
+    await contract.connect(signer).mintCBAMosaic(1, signature, { value: ethers.utils.parseEther("1") });
 
     // tokenId=10のチェック
     expect(await contract.ownerOf(10)).equal(signer.address);
@@ -136,7 +136,7 @@ describe("CryptoBabyAnimalsMosaic test", function () {
     await contract.setToolUser(tool.address);
 
     // メッセージハッシュの作成
-    hashbytes = makeMassageBytes(1000, "ipfs://1234567890/", signer.address)
+    hashbytes = makeMassageBytes(1000, signer.address)
 
     // toolユーザで署名
     let signature = await tool.signMessage(hashbytes);
@@ -145,7 +145,7 @@ describe("CryptoBabyAnimalsMosaic test", function () {
     await contract.pause(false);
     // console.log("cont-msg:", await contract.connect(signer).testMakeMessage(1, "ipfs://1234567890/", cbaOwner.address, signer.address));
     // ミント
-    await expect( contract.connect(signer).mintCBAMosaic(1000, "ipfs://1234567890/", signature, { value: ethers.utils.parseEther("1") }))
+    await expect( contract.connect(signer).mintCBAMosaic(1000, signature, { value: ethers.utils.parseEther("1") }))
     .to.be.revertedWith('CBAs are only 999');
 
   }
@@ -162,7 +162,7 @@ describe("CryptoBabyAnimalsMosaic test", function () {
     await contract.setToolUser(tool.address);
 
     // メッセージハッシュの作成
-    hashbytes = makeMassageBytes(1, "ipfs://1234567890/", signer.address)
+    hashbytes = makeMassageBytes(1, signer.address)
 
     // toolユーザで署名
     let signature = await tool.signMessage(hashbytes);
@@ -171,7 +171,7 @@ describe("CryptoBabyAnimalsMosaic test", function () {
     await contract.pause(true);
 
     // ミント
-    await expect(contract.connect(signer).mintCBAMosaic(1, "ipfs://1234567890/", signature))
+    await expect(contract.connect(signer).mintCBAMosaic(1, signature))
     .to.be.revertedWith('the contract is paused');
   }
   );
@@ -187,7 +187,7 @@ describe("CryptoBabyAnimalsMosaic test", function () {
     await contract.setToolUser(tool.address);
 
     // メッセージハッシュの作成
-    hashbytes = makeMassageBytes(1, "ipfs://1234567890/", signer.address)
+    hashbytes = makeMassageBytes(1, signer.address)
 
     // toolユーザで署名
     let signature = await tool.signMessage(hashbytes);
@@ -196,7 +196,7 @@ describe("CryptoBabyAnimalsMosaic test", function () {
     await contract.pause(false);
 
     // ミント
-    await expect(contract.connect(signer2).mintCBAMosaic(1, "ipfs://1234567890/", signature))
+    await expect(contract.connect(signer2).mintCBAMosaic(1, signature))
     .to.be.revertedWith('signature is incorrect');
   }
   );
@@ -212,7 +212,7 @@ describe("CryptoBabyAnimalsMosaic test", function () {
     await contract.setToolUser(tool.address);
 
     // メッセージハッシュの作成
-    hashbytes = makeMassageBytes(1, "ipfs://1234567890/", signer.address)
+    hashbytes = makeMassageBytes(1, signer.address)
 
     // toolユーザで署名
     let signature = await tool.signMessage(hashbytes);
@@ -221,10 +221,10 @@ describe("CryptoBabyAnimalsMosaic test", function () {
     await contract.pause(false);
 
     // ミント
-    await contract.connect(signer).mintCBAMosaic(1, "ipfs://1234567890/", signature);
+    await contract.connect(signer).mintCBAMosaic(1, signature);
 
     // ミント2回目
-    await expect(contract.connect(signer).mintCBAMosaic(1, "ipfs://1234567890/", signature))
+    await expect(contract.connect(signer).mintCBAMosaic(1,  signature))
     .to.be.revertedWith('the tokenId is minted');
 
   }
@@ -234,10 +234,8 @@ describe("CryptoBabyAnimalsMosaic test", function () {
 
 function makeMassageBytes(
   _tokenId,
-  _baseUri,
   _sender) {
   let msg = String(_tokenId) + "|" +
-    String(_baseUri) + "|" +
     String(_sender).toLowerCase();
 
     // console.log("msg:",msg);
