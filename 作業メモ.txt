@@ -69,7 +69,7 @@ npm install --save-dev @nomiclabs/hardhat-etherscan
 # https://etherscan.io/myapikey にてAPIKeyを発行
 
 # verify
-npx hardhat verify --network goerli 0x55D48E856DB1933A2F63d30eb0055b8840B1B165
+npx hardhat verify --network goerli 0x13F359646a1c410C69F85F100238351726826Ddc
 
 
 
