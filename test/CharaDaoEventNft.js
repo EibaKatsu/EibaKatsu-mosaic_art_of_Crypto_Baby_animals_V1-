@@ -26,9 +26,6 @@ describe("CharaDaoEventNft test", function () {
     // // pauseの設定
     await contract.pause(false);
 
-    // toolUserの設定
-    await contract.setSigner(signer.address);
-
     // メッセージハッシュの作成
     hashMsg = makeMassage(owner.address);
     hashbytes = makeMassageBytes(hashMsg);
@@ -43,9 +40,7 @@ describe("CharaDaoEventNft test", function () {
       10,  //  _tokenMax,
       5,  // _mintForCreator,
       0, // _minimumPrice,
-      creator.address,  // _creator,
-      hashMsg, // _hash,
-      signature // signature
+      creator.address  // _creator,
     );
 
     // createNftでセットした値の確認
@@ -69,46 +64,41 @@ describe("CharaDaoEventNft test", function () {
   }
   );
 
-  it("異常系 - createNft", async function () {
-    // 4. loadFixtureを通して、セットアップ処理をたたき、各種変数を取得
-    const { contractFactory, contract, owner, signer, user1, user2, creator } = await loadFixture(deployNftFixture);
+  // it("異常系 - createNft", async function () {
+  //   // 4. loadFixtureを通して、セットアップ処理をたたき、各種変数を取得
+  //   const { contractFactory, contract, owner, signer, user1, user2, creator } = await loadFixture(deployNftFixture);
 
-    // // pauseの設定
-    await contract.pause(false);
+  //   // // pauseの設定
+  //   await contract.pause(false);
 
-    // toolUserの設定
-    await contract.setSigner(signer.address);
+  //   // メッセージハッシュの作成
+  //   hashMsg = makeMassage(user1.address);
+  //   hashbytes = makeMassageBytes(hashMsg);
 
-    // メッセージハッシュの作成
-    hashMsg = makeMassage(user1.address);
-    hashbytes = makeMassageBytes(hashMsg);
+  //   // signerユーザで署名
+  //   let signature = await signer.signMessage(hashbytes);
 
-    // signerユーザで署名
-    let signature = await signer.signMessage(hashbytes);
+  //   // hashMsgに別ユーザでセット(異なるhashMsg)
+  //   hashMsg2 = makeMassage(user2.address);
 
-    // hashMsgに別ユーザでセット(異なるhashMsg)
-    hashMsg2 = makeMassage(user2.address);
+  //   // console.log("hashMsg:", hashMsg);
+  //   // console.log("hashMsg2:", hashMsg2);
 
-    // console.log("hashMsg:", hashMsg);
-    // console.log("hashMsg2:", hashMsg2);
+  //   // console.log("testMakeMassage1:", await contract.testMakeMessage(hashMsg, user1.address));
+  //   // console.log("testMakeMassage2:", await contract.testMakeMessage(hashMsg2, user1.address));
 
-    // console.log("testMakeMassage1:", await contract.testMakeMessage(hashMsg, user1.address));
-    // console.log("testMakeMassage2:", await contract.testMakeMessage(hashMsg2, user1.address));
+  //   // NFTを登録
+  //   await expect(contract.connect(user1).createNft(
+  //     "name",  //_name,
+  //     "ipfs://1234567890/1.json",   // _uri,
+  //     10,  //  _tokenMax,
+  //     5,  // _mintForCreator,
+  //     0, // _minimumPrice,
+  //     creator.address  // _creator,
+  //   )).to.be.revertedWith("signature is incorrect");
 
-    // NFTを登録
-    await expect(contract.connect(user1).createNft(
-      "name",  //_name,
-      "ipfs://1234567890/1.json",   // _uri,
-      10,  //  _tokenMax,
-      5,  // _mintForCreator,
-      0, // _minimumPrice,
-      creator.address,  // _creator,
-      hashMsg2, // _hash,
-      signature // signature
-    )).to.be.revertedWith("signature is incorrect");
-
-  }
-  );
+  // }
+  // );
 
 
   it("異常系 - mint", async function () {
@@ -118,9 +108,6 @@ describe("CharaDaoEventNft test", function () {
     // // pauseの設定
     await contract.pause(false);
 
-    // toolUserの設定
-    await contract.setSigner(signer.address);
-  
     // メッセージハッシュの作成
     hashMsg = makeMassage(creator.address);
     hashbytes = makeMassageBytes(hashMsg);
@@ -135,9 +122,7 @@ describe("CharaDaoEventNft test", function () {
       10,  //  _tokenMax,
       9,  // _mintForCreator,
       ethers.utils.parseEther("1"), // _minimumPrice,
-      creator.address,  // _creator,
-      hashMsg, // _hash,
-      signature // signature
+      creator.address  // _creator,
     );
 
     // createNftでセットした値の確認

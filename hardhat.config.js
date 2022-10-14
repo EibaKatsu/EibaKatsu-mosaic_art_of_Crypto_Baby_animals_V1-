@@ -18,6 +18,10 @@ module.exports = {
       url: "https://eth-mainnet.g.alchemy.com/v2/" + process.env.ALCHEMY_KEY_MAINNET,
       accounts: [`${process.env.PRIVATE_KEY}`],
     },
+    polygon: {
+      url: "https://polygon-mainnet.g.alchemy.com/v2/" + process.env.ALCHEMY_KEY_POLYGON,
+      accounts: [`${process.env.PRIVATE_KEY_CHARADAO}`],
+    },
     goerli: {
       url: "https://eth-goerli.alchemyapi.io/v2/" + process.env.ALCHEMY_KEY_GOERLI,
       accounts: [`${process.env.PRIVATE_KEY_DEV}`],

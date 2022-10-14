@@ -35,7 +35,6 @@ contract CharaDaoEventNft is ERC1155,AccessControl {
     }
 
     bool public paused = false;
-    address signer = 0x52A76a606AC925f7113B4CC8605Fe6bCad431EbB;
 
     mapping(uint256 => Nft) public nfts;
 
@@ -53,14 +52,9 @@ contract CharaDaoEventNft is ERC1155,AccessControl {
         uint16 _tokenMax,
         uint16 _mintForCreator,
         uint256 _minimumPrice,
-        address payable _creator,
-        string memory _hashMsg,
-        bytes memory signature
-    ) public {
+        address payable _creator
+    ) public onlyAdmin {
         
-        if(!hasRole(ADMIN, msg.sender) && !_verifySigner(_makeMassage(_hashMsg, msg.sender), signature))
-            revert("signature is incorrect");
-
         _tokenCounter.increment();
         Counters.Counter memory _amount;
         nfts[_tokenCounter.current()] = Nft(
@@ -117,44 +111,44 @@ contract CharaDaoEventNft is ERC1155,AccessControl {
         }
     }
 
-    function _makeMassage(string memory _hashMsg, address _sender)
-        internal
-        view
-        virtual
-        returns (string memory)
-    {
-        return
-            string(
-                abi.encodePacked(_hashMsg, "|", "0x", _sender.toAsciiString())
-            );
-    }
-
-    function _verifySigner(string memory message, bytes memory signature)
-        internal
-        view
-        returns (bool)
-    {
-        return RecoverSigner.recoverSignerByMsg(message, signature) == signer;
-    }
-
     function uri(uint256 _id) public view override returns (string memory) {
         return nfts[_id].uri;
+    }
+
+    function setUri(uint256 _id, string memory _uri) public onlyAdmin {
+        nfts[_id].uri = _uri;
     }
 
     function name(uint256 _id) public view returns (string memory) {
         return nfts[_id].name;
     }
 
+    function setName(uint256 _id, string memory _name) public onlyAdmin {
+        nfts[_id].name = _name;
+    }
+
     function tokenMax(uint256 _id) public view returns (uint16) {
         return nfts[_id].tokenMax;
+    }
+
+    function setTokenMax(uint256 _id, uint16 _tokenMax) public onlyAdmin {
+        nfts[_id].tokenMax = _tokenMax;
     }
 
     function minimumPrice(uint256 _id) public view returns (uint256) {
         return nfts[_id].minimumPrice;
     }
 
+    function setTokenMax(uint256 _id, uint256 _minimumPrice) public onlyAdmin {
+        nfts[_id].minimumPrice = _minimumPrice;
+    }
+
     function creator(uint256 _id) public view returns (address) {
         return nfts[_id].creator;
+    }
+
+    function setCreator(uint256 _id, address payable  _creator) public onlyAdmin {
+        nfts[_id].creator = _creator;
     }
 
     function amount(uint256 _id) public view returns (uint256) {
@@ -165,17 +159,13 @@ contract CharaDaoEventNft is ERC1155,AccessControl {
         paused = _state;
     }
 
-    function setSigner(address _signer) public onlyAdmin {
-        signer = _signer;
-    }
-
     function burn(
-        address _account,
         uint256 _id,
         uint256 _amount
     ) public {
-        _burn(_account, _id, _amount);
+        _burn(msg.sender, _id, _amount);
     }
+
 
     function withdraw() public payable onlyAdmin {
         (bool os, ) = payable(msg.sender).call{value: address(this).balance}(
