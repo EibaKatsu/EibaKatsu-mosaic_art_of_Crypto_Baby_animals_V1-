@@ -6,20 +6,14 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
-import "./lib/RecoverSigner.sol";
-import "./lib/AddressStrings.sol";
 
-contract CharaDaoEventNft is ERC1155,AccessControl {
+contract CharaDaoEventNft is ERC1155, AccessControl {
     using Counters for Counters.Counter;
-    using Strings for uint16;
-    using Strings for uint256;
-    using AddressStrings for address;
 
     bytes32 public ADMIN = "ADMIN";
 
     modifier onlyAdmin() {
-        if(!hasRole(ADMIN, msg.sender)) revert("not admin");
+        if (!hasRole(ADMIN, msg.sender)) revert("not admin");
         _;
     }
 
@@ -37,6 +31,7 @@ contract CharaDaoEventNft is ERC1155,AccessControl {
     bool public paused = false;
 
     mapping(uint256 => Nft) public nfts;
+    mapping(address => uint256[]) public MintCount;
 
     constructor(address[] memory admins) ERC1155("") {
         _setRoleAdmin(ADMIN, DEFAULT_ADMIN_ROLE);
@@ -54,7 +49,6 @@ contract CharaDaoEventNft is ERC1155,AccessControl {
         uint256 _minimumPrice,
         address payable _creator
     ) public onlyAdmin {
-        
         _tokenCounter.increment();
         Counters.Counter memory _amount;
         nfts[_tokenCounter.current()] = Nft(
@@ -67,9 +61,7 @@ contract CharaDaoEventNft is ERC1155,AccessControl {
         );
 
         if (_mintForCreator > 0) {
-            
             _mint(_creator, _tokenCounter.current(), _mintForCreator, "");
-            
             for (uint16 i = 0; i < _mintForCreator; i++) {
                 nfts[_tokenCounter.current()].amount.increment();
             }
@@ -77,19 +69,23 @@ contract CharaDaoEventNft is ERC1155,AccessControl {
     }
 
     function mint(uint256 _tokenId) public payable {
-        if(nfts[_tokenId].tokenMax == 0) revert("_tokenId is not exists");
+        if (nfts[_tokenId].tokenMax == 0) revert("_tokenId is not exists");
 
-        if(balanceOf(msg.sender, _tokenId) > 0) revert("can mint only one token");
+        for (uint256 i = 0; i < MintCount[msg.sender].length; i++) {
+            if (_tokenId == MintCount[msg.sender][i])
+                revert("can mint only one token");
+        }
 
-        if(nfts[_tokenId].amount.current() + 1 > nfts[_tokenId].tokenMax)
+        if (nfts[_tokenId].amount.current() + 1 > nfts[_tokenId].tokenMax)
             revert("tokenId had reached max count");
-
-        if(nfts[_tokenId].minimumPrice > 0 && msg.value < nfts[_tokenId].minimumPrice)
-            revert("Insufficient payment");
+        if (
+            nfts[_tokenId].minimumPrice > 0 &&
+            msg.value < nfts[_tokenId].minimumPrice
+        ) revert("Insufficient payment");
 
         _mint(msg.sender, _tokenId, 1, "");
-
         nfts[_tokenId].amount.increment();
+        MintCount[msg.sender].push(_tokenId);
 
         if (msg.value > 0) {
             nfts[_tokenId].creator.transfer(msg.value);
@@ -98,10 +94,8 @@ contract CharaDaoEventNft is ERC1155,AccessControl {
 
     // adminmint
     function adminMint(uint256 _tokenId, uint16 _amount) public onlyAdmin {
-        
-        if(nfts[_tokenId].tokenMax == 0) revert("_tokenId is not exists");
-
-        if(nfts[_tokenId].amount.current() + 1 > nfts[_tokenId].tokenMax)
+        if (nfts[_tokenId].tokenMax == 0) revert("_tokenId is not exists");
+        if (nfts[_tokenId].amount.current() + 1 > nfts[_tokenId].tokenMax)
             revert("tokenId had reached max count");
 
         _mint(nfts[_tokenId].creator, _tokenId, _amount, "");
@@ -147,7 +141,10 @@ contract CharaDaoEventNft is ERC1155,AccessControl {
         return nfts[_id].creator;
     }
 
-    function setCreator(uint256 _id, address payable  _creator) public onlyAdmin {
+    function setCreator(uint256 _id, address payable _creator)
+        public
+        onlyAdmin
+    {
         nfts[_id].creator = _creator;
     }
 
@@ -159,13 +156,9 @@ contract CharaDaoEventNft is ERC1155,AccessControl {
         paused = _state;
     }
 
-    function burn(
-        uint256 _id,
-        uint256 _amount
-    ) public {
+    function burn(uint256 _id, uint256 _amount) public {
         _burn(msg.sender, _id, _amount);
     }
-
 
     function withdraw() public payable onlyAdmin {
         (bool os, ) = payable(msg.sender).call{value: address(this).balance}(

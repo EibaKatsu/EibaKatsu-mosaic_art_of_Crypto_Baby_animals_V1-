@@ -150,8 +150,29 @@ describe("CharaDaoEventNft test", function () {
 
     // 最大数以上のミント 現在の発行数はmax
     expect(await contract.amount(1)).equal(10);
-    // ミント2回目
+    // ミント最大数以上
     await expect(contract.connect(user2).mint(1)).to.be.revertedWith("tokenId had reached max count");
+
+    // 二つ目のNFTを登録
+    await contract.connect(creator).createNft(
+      "name2",  //_name,
+      "ipfs://1234567890/2.json",   // _uri,
+      10,  //  _tokenMax,
+      8,  // _mintForCreator,
+      ethers.utils.parseEther("0"), // _minimumPrice,
+      creator.address  // _creator,
+    );
+
+    // ミント 
+    await contract.connect(user1).mint(2);
+      
+    // user1にミントされていること
+    expect(await contract.balanceOf(user1.address, 2)).equal(1);
+    expect(await contract.amount(2)).equal(9);
+    
+    // ミント 2回目
+    await expect(contract.connect(user1).mint(2)).to.be.revertedWith("can mint only one token");
+
 
   }
   );
